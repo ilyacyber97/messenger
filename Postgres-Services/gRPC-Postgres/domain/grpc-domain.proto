@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package domain;
+
+option go_package = "./domain"; // Укажите путь до вашего Go-пакета.
+
+
+message Message {
+  string id = 1;
+  string body = 2;
+}
+
+service MessageService {
+  rpc SaveMessage (Message) returns (Empty);
+  rpc ReadMessage (ReadMessageRequest) returns (Message);
+  rpc ReadMessages (Empty) returns (MessagesList);
+}
+
+message ReadMessageRequest {
+  string id = 1;
+}
+
+message MessagesList {
+  repeated Message messages = 1;
+}
+
+message Empty {}
