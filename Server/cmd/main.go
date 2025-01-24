@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
-	"server/internal/adapters/domain"
+	"server/domain"
 	"server/internal/adapters/http"
+	"server/internal/core/services"
 	"server/log"
 	"server/metrics/prometric"
 
@@ -37,7 +38,8 @@ func main() {
 	defer logger.Close()
 
 	//metric
-	prometheus.MustRegister(prometric.RequestCounter)
+	metric := prometric.NewMetric()
+	prometheus.MustRegister(metric)
 
 	clientConn, err := grpc.NewClient("server1:50054", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -46,15 +48,15 @@ func main() {
 	defer clientConn.Close()
 
 	client := domain.NewMessageServiceClient(clientConn)
-
-	handler = http.NewHandlerMessengerServiceRepository(svc)
+	service := services.NewMessengerServiceRepository(client)
+	handler = http.NewHandlerMessengerServiceRepository(service, logger, metric)
 
 	router := gin.Default()
 	router.POST("message", handler.SaveMessage)
 	router.GET("message/:id", handler.ReadMessage)
 	router.GET("/messages", handler.ReadMessages)
 	//metrics
-	router.GET("/metrics", prometric.MetricHandler)
+	router.GET("/metrics", handler.MetricHandler)
 	logger.Info("Запуск сервера на порту :8080")
 	router.Run(":8080")
 

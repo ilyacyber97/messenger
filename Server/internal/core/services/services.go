@@ -1,27 +1,34 @@
 package services
 
 import (
+	"context"
 	"server/domain"
-	"server/internal/core/ports"
+
+	"github.com/google/uuid"
 )
 
-type messengerService struct {
-	log    ports.MessengerLog
+type MessengerService struct {
 	client domain.MessageServiceClient
 }
 
-func NewMessengerServiceRepository(log ports.MessengerLog, client domain.MessageServiceClient) *messengerService {
-	return &messengerService{log: log, client: client}
+func NewMessengerServiceRepository(client domain.MessageServiceClient) *MessengerService {
+	return &MessengerService{client: client}
 }
 
-func (s *messengerService) SaveMessage(message domain.Message) error {
-	s.client.SaveMessage()
-	return s.repo.SaveMessage(message)
+func (s *MessengerService) SaveMessage(message *domain.Message) error {
+	message.Id = uuid.New().String()
+	_, err := s.client.SaveMessage(context.Background(), message)
+	return err
 }
 
-func (s *messengerService) ReadMessage(id string) (*domain.Message, error) {
-	return s.repo.ReadMessage(id)
+func (s *MessengerService) ReadMessage(id string) (*domain.Message, error) {
+	request := &domain.ReadMessageRequest{Id: id}
+	return s.client.ReadMessage(context.Background(), request)
 }
-func (s *messengerService) ReadMessages() ([]*domain.Message, error) {
-	return s.repo.ReadMessages()
+
+func (s *MessengerService) ReadMessages() ([]*domain.Message, error) {
+	empty := &domain.Empty{}
+	list, err := s.client.ReadMessages(context.Background(), empty)
+	return list.Messages, err
+
 }
