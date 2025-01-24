@@ -2,10 +2,10 @@ package http
 
 import (
 	"errors"
-	"messenger/internal/core/domain"
-	"messenger/internal/core/ports"
-	"messenger/logs/zaplog"
-	"messenger/metrics/prometric"
+	"server/internal/core/domain"
+	"server/internal/core/ports"
+	"server/logs/zaplog"
+	"server/metrics/prometric"
 	"net/http"
 	"strconv"
 

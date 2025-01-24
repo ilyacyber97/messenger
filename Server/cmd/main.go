@@ -2,20 +2,19 @@ package main
 
 import (
 	"flag"
-	"messenger/config"
-	"messenger/internal/adapters/handler/http"
-	"messenger/internal/adapters/repository/postgres"
-	"messenger/internal/adapters/repository/redis"
-	"messenger/internal/core/services"
-	"messenger/logs/zaplog"
-	"messenger/metrics/prometric"
+	"server/config"
+	"server/internal/adapters/handler/http"
+	"server/internal/adapters/repository/postgres"
+	"server/internal/adapters/repository/redis"
+	"server/internal/core/services"
+	"server/logs/zaplog"
+	"server/metrics/prometric"
 
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/gin-gonic/gin"
 )
 
-var flagDB = flag.String("db", "postgres", "Выберита Базу Данных")
 var handler *http.HTTPHandler
 
 func init() {
@@ -24,28 +23,7 @@ func init() {
 }
 
 func main() {
-	//log
-	defer zaplog.Shutdown()
-
-	//flag
-	flag.Parse()
-
-	switch *flagDB {
-
-	case "redis":
-		zaplog.Logger.Info("Пользователь выбрал Redis")
-
-		repo, err := redis.NewRedisRepository(config.RedisHost)
-		if err != nil {
-			zaplog.Logger.Fatal("Не удалось подключиться к Redis", zaplog.LogError(err))
-		}
-
-		svc := services.NewMessengerServiceRepository(repo)
-		handler = http.NewHandlerMessengerServiceRepository(svc)
-
-	default:
-		zaplog.Logger.Info("Пользователь выбрал Postgresql")
-
+			
 		repo, err := postgres.NewPostgresRepository(config.PostgresDSN)
 		if err != nil {
 			zaplog.Logger.Fatal("Не удалось подключиться к PostgreSQL", zaplog.LogError(err))
@@ -54,7 +32,7 @@ func main() {
 		svc := services.NewMessengerServiceRepository(repo)
 		handler = http.NewHandlerMessengerServiceRepository(svc)
 
-	}
+	
 
 	router := gin.Default()
 

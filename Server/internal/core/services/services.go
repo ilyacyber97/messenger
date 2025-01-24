@@ -1,8 +1,8 @@
 package services
 
 import (
-	"messenger/internal/core/domain"
-	"messenger/internal/core/ports"
+	"server/internal/core/domain"
+	"server/internal/core/ports"
 
 	"github.com/google/uuid"
 )

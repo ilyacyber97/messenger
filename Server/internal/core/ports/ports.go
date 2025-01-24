@@ -1,6 +1,6 @@
 package ports
 
-import "messenger/internal/core/domain"
+import "server/internal/core/domain"
 
 type MessengerService interface {
 	SaveMessage(message domain.Message) error
