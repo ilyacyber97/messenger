@@ -1,14 +1,15 @@
 package ports
 
-import "server/internal/core/domain"
+import (
+	"server/domain"
+)
 
-type MessengerService interface {
+type MessengerClient interface {
 	SaveMessage(message domain.Message) error
 	ReadMessage(id string) (*domain.Message, error)
 	ReadMessages() ([]*domain.Message, error)
 }
-type MessengerRepository interface {
-	SaveMessage(message domain.Message) error
-	ReadMessage(id string) (*domain.Message, error)
-	ReadMessages() ([]*domain.Message, error)
+
+type MessengerLog interface {
+	Close()
 }

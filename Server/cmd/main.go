@@ -1,47 +1,61 @@
 package main
 
 import (
-	"flag"
-	"server/config"
-	"server/internal/adapters/handler/http"
-	"server/internal/adapters/repository/postgres"
-	"server/internal/adapters/repository/redis"
-	"server/internal/core/services"
-	"server/logs/zaplog"
+	"fmt"
+	"os"
+	"server/internal/adapters/domain"
+	"server/internal/adapters/http"
+	"server/log"
 	"server/metrics/prometric"
 
-	"github.com/prometheus/client_golang/prometheus"
-
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var handler *http.HTTPHandler
 
-func init() {
-	prometheus.MustRegister(prometric.RequestCounter)
-	zaplog.Init()
+func initLog() (*log.Logger, error) {
+	file, err := os.Create("../logfile.txt")
+	if err != nil {
+		return nil, fmt.Errorf("модуль zap: ошибка создания log файла %v", err)
+	}
+	logger := log.NewLoggerZap(file)
+
+	logger.Info("Logger инициализирован успешно")
+	return logger, nil
 }
 
 func main() {
-			
-		repo, err := postgres.NewPostgresRepository(config.PostgresDSN)
-		if err != nil {
-			zaplog.Logger.Fatal("Не удалось подключиться к PostgreSQL", zaplog.LogError(err))
-		}
+	//log
+	logger, err := initLog()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Close()
 
-		svc := services.NewMessengerServiceRepository(repo)
-		handler = http.NewHandlerMessengerServiceRepository(svc)
+	//metric
+	prometheus.MustRegister(prometric.RequestCounter)
 
-	
+	clientConn, err := grpc.NewClient("server1:50054", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.Fatal("Не удалось подключиться: %v", zap.Error(err))
+	}
+	defer clientConn.Close()
+
+	client := domain.NewMessageServiceClient(clientConn)
+
+	handler = http.NewHandlerMessengerServiceRepository(svc)
 
 	router := gin.Default()
-
 	router.POST("message", handler.SaveMessage)
 	router.GET("message/:id", handler.ReadMessage)
 	router.GET("/messages", handler.ReadMessages)
 	//metrics
 	router.GET("/metrics", prometric.MetricHandler)
-	zaplog.Logger.Info("Запуск сервера на порту :8080")
+	logger.Info("Запуск сервера на порту :8080")
 	router.Run(":8080")
 
 }

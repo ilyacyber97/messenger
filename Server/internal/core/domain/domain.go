@@ -1,4 +1,4 @@
-package domain
+package domains
 
 type Message struct {
 	Id   string `json:"id"`

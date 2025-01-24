@@ -1,22 +1,21 @@
 package services
 
 import (
-	"server/internal/core/domain"
+	"server/domain"
 	"server/internal/core/ports"
-
-	"github.com/google/uuid"
 )
 
 type messengerService struct {
-	repo ports.MessengerRepository
+	log    ports.MessengerLog
+	client domain.MessageServiceClient
 }
 
-func NewMessengerServiceRepository(repo ports.MessengerRepository) ports.MessengerService {
-	return &messengerService{repo: repo}
+func NewMessengerServiceRepository(log ports.MessengerLog, client domain.MessageServiceClient) *messengerService {
+	return &messengerService{log: log, client: client}
 }
 
 func (s *messengerService) SaveMessage(message domain.Message) error {
-	message.Id = uuid.New().String()
+	s.client.SaveMessage()
 	return s.repo.SaveMessage(message)
 }
 
