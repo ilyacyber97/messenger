@@ -1,2 +1,2 @@
 # Golang-Microservices-Messenger
-![image](https://github.com/user-attachments/assets/9c4860e2-0c2f-49a0-8f18-1708caafd2b2)
+![image](https://github.com/user-attachments/assets/7bdea8dc-a7ef-4b47-a7c0-ac8c6bc93165)
